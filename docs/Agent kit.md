@@ -25,8 +25,9 @@ tests/security/      red-team tests; protected
 ## Non-negotiables
 - Only src/server/ touches Postgres (import 'server-only'). Every tenant query runs
   inside withTenant() over the Neon WebSocket Pool, never neon-http.
-- Every Server Action and Route Handler calls requireWorkspace() first.
-  tenant_id comes from the session, never from request input.
+- Every Server Action and Route Handler calls requireWorkspace() first, except the
+  Route Handlers listed in ADR 4, which authenticate as ADR 4 says. tenant_id comes
+  from the session, never from request input.
 - Every new tenant table gets tenant_id, RLS enabled and forced, the nullif policy
   and an isolation test. The schema test fails otherwise.
 - Validate all input with src/contracts. Server Actions return ActionResult<T>;
