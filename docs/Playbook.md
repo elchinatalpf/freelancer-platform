@@ -25,7 +25,7 @@ You steer, Claude Code builds, and GitHub keeps the record. Every step below bec
 
 ## Where we are
 
-**Now:** Phase 0, step 0.5 (quality tooling): the spec is merged, the build has not started. Open: three account settings to confirm (0.2). Before 0.6: GitHub refuses branch protection on this private repo without GitHub Pro. Last updated Nov 25, 2026.
+**Now:** Phase 0, step 0.5 (quality tooling) is in review in [PR #7](https://github.com/elchinatalpf/freelancer-platform/pull/7): built, waiting for the reviewer and your merge. Open: three account settings to confirm (0.2). Before 0.6: GitHub refuses branch protection on this private repo without GitHub Pro. Last updated Nov 25, 2026.
 
 Move this line forward every time a step changes status. Phase status comes from its step table: a phase is Done only after its gate checklist is ticked.
 
@@ -100,7 +100,7 @@ A new repo that deploys a health check, with CI and the agent guardrails in plac
 | 0.2 | Create the accounts (Before Claude Code) | You | Every box in that list is ticked | In progress | GitHub private repo checked; Vercel, Neon and Stripe accounts exist (Nov 25). To confirm: Vercel on Hobby and connected to GitHub, a Neon project on Postgres 18, Stripe in test mode |
 | 0.3 | Scaffold one Next.js 16.4.5+ app at the repo root: strict TypeScript, `pnpm-workspace.yaml` with the supply-chain settings, Node and pnpm pinned, `.env.example`, environment validated at boot | Sonnet | `pnpm build` passes and `/api/health` returns 200 locally | Done | [PR #1](https://github.com/elchinatalpf/freelancer-platform/pull/1) |
 | 0.4 | On a kit/ branch, add the agent kit from the Agent kit tab: `CLAUDE.md`, `.claude/` settings, hooks, agents and skills, `docs/adr/` with ADR #1–10, the spec and PR templates | Sonnet | `/status` runs, and an edit to `tests/security/` is blocked | Done | [PR #2](https://github.com/elchinatalpf/freelancer-platform/pull/2); follow-ups [#3](https://github.com/elchinatalpf/freelancer-platform/pull/3) and [#6](https://github.com/elchinatalpf/freelancer-platform/pull/6) |
-| 0.5 | Quality tooling: Vitest, Playwright, ESLint rules (database client only under `src/server/`), Prettier, knip, Stryker for the mutation tests run at gates, one `pnpm check` script | Sonnet | `pnpm check` runs typecheck, lint and tests in one command | In progress | Spec [PR #5](https://github.com/elchinatalpf/freelancer-platform/pull/5), [issue #4](https://github.com/elchinatalpf/freelancer-platform/issues/4); build not started |
+| 0.5 | Quality tooling: Vitest, Playwright, ESLint rules (database client only under `src/server/`), Prettier, knip, Stryker for the mutation tests run at gates, one `pnpm check` script | Sonnet | `pnpm check` runs typecheck, lint and tests in one command | In review | [PR #7](https://github.com/elchinatalpf/freelancer-platform/pull/7); spec [PR #5](https://github.com/elchinatalpf/freelancer-platform/pull/5), [issue #4](https://github.com/elchinatalpf/freelancer-platform/issues/4) |
 | 0.6 | CI on GitHub Actions: frozen install, `pnpm check`, Playwright smoke test, dependency audit, secret scan, a Postgres service container; branch protection on `main` | Sonnet | A PR shows green checks and `main` refuses direct pushes | Not started |  |
 | 0.7 | Connect Vercel: preview deployment per PR, environment variables per environment | You + Sonnet | The PR shows a preview link and `/api/health` answers on `<app>.vercel.app` | Not started |  |
 
