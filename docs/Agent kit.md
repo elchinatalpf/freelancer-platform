@@ -103,7 +103,7 @@ Permissions say what Claude Code may do; hooks enforce the rules that must never
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/protect-paths.mjs"
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/protect-paths.mjs || exit 2"
           }
         ]
       }
@@ -178,6 +178,8 @@ try {
 }
 ```
 
+After changing the hook, run `node .claude/hooks/protect-paths.cases.mjs`; it tries each case in a throwaway git repo and exits non-zero if any fails.
+
 **`.claude/hooks/done-gate.mjs`** runs `pnpm check` whenever Claude tries to finish with changes on the branch, and sends it back to work if anything fails. Start Docker before a build session, because the integration tests need the local Postgres.
 
 ```js
@@ -246,7 +248,8 @@ You review; you never change files. Use Bash only for git diff, git log,
 gh pr view, gh pr diff and gh pr comment.
 1. Read the spec, CLAUDE.md and every ADR the diff touches. Read the whole diff.
 2. Check in this order: tenant isolation (withTenant, tenant id from the session);
-   requireWorkspace() in every Server Action and Route Handler; input validation;
+   requireWorkspace() in every Server Action and in every Route Handler not listed in
+   ADR 4; listed ones authenticate as ADR 4 says; input validation;
    error handling; tests that would fail if the code were wrong; structure against
    src/features/workspace-profile/; new dependencies.
 3. Each problem: file and line, what is wrong, why it matters, the fix.
