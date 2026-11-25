@@ -13,6 +13,13 @@
 # testing
 /coverage
 
+# tool output, anchored at the root so src/features/reports/ would stay tracked
+/.vitest/
+/.stryker-tmp/
+/reports/
+/test-results/
+/playwright-report/
+
 # next.js
 /.next/
 /out/
