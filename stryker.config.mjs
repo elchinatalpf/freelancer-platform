@@ -1,5 +1,4 @@
 // Mutation testing: would a test notice if a line broke? Run at phase gates.
-/** @type {import("@stryker-mutator/api/core").PartialStrykerOptions} */
 const config = {
   mutate: ["src/server/**/*.{ts,tsx}", "!src/server/**/*.test.{ts,tsx}"],
   // Named because pnpm's isolated node_modules defeats the default discovery.
