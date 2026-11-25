@@ -65,14 +65,23 @@ Permissions say what Claude Code may do; hooks enforce the rules that must never
       "Bash(cat .env*)",
       "Bash(git push --force *)",
       "Bash(git push -f *)",
-      "Bash(rm -rf *)"
+      "Bash(rm -rf *)",
+      "Bash(git reset --hard *)",
+      "Bash(git reset --hard)",
+      "Bash(git clean *)",
+      "Bash(git checkout -- *)"
     ],
     "ask": [
       "Bash(git push *)",
       "Bash(gh pr merge *)",
       "Bash(pnpm add *)",
       "Bash(pnpm remove *)",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(git rm *)",
+      "Bash(git rebase *)",
+      "Bash(git rebase)",
+      "Bash(git restore *)",
+      "Bash(git stash *)"
     ],
     "allow": [
       "Bash(pnpm check)",
