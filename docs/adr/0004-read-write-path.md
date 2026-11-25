@@ -10,7 +10,12 @@ Data Access Layer.
 ## Decision
 - **Reads:** Server Components read through the Data Access Layer.
 - **Writes:** Server Actions mutate, each calling `requireWorkspace()` first.
-- **Route Handlers:** only for auth, webhooks and cron.
+- **Route Handlers:** only these, each authenticating as shown instead of through
+  `requireWorkspace()`:
+  - `/api/health`: public and read-only.
+  - `/api/auth/[...all]`: Better Auth (ADR 6).
+  - Stripe webhook: the Stripe signature (ADR 9).
+  - Cron: a `CRON_SECRET` bearer token (ADR 2).
 
 ## Main alternative
 A REST API called from the browser.
