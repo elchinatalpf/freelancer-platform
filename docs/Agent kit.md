@@ -103,7 +103,7 @@ Permissions say what Claude Code may do; hooks enforce the rules that must never
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/protect-paths.mjs"
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/protect-paths.mjs || exit 2"
           }
         ]
       }
