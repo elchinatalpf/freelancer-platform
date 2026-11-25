@@ -1,0 +1,22 @@
+# pnpm settings live here, not in .npmrc (see https://pnpm.io/settings).
+# With no `packages` list, the workspace is the root package only.
+
+# Supply chain (https://pnpm.io/supply-chain-security)
+minimumReleaseAge: 1440        # minutes: ignore versions published in the last 24 hours
+blockExoticSubdeps: true       # git and tarball sources only as direct dependencies
+trustPolicy: no-downgrade      # fail if a package's trust level drops from an earlier release
+trustPolicyExclude:
+  # Transitive dependency of eslint-config-next (it asks for ^3.5.2). Flagged because
+  # 3.10.1 was published on the old 3.x branch without npm provenance, after the 4.x
+  # line began shipping with it. Same publisher and repo as before (checked on the
+  # registry, Nov 24 2026). Remove when eslint-config-next moves to 4.x.
+  - 'eslint-import-resolver-typescript@3.10.1'
+strictDepBuilds: true          # fail on dependency build scripts nobody has reviewed
+
+# Dependency build scripts are denied unless listed here.
+allowBuilds:
+  sharp: false
+  unrs-resolver: false
+
+# Fail the install on a Node version outside package.json "engines".
+engineStrict: true
