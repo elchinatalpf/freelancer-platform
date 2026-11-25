@@ -178,6 +178,8 @@ try {
 }
 ```
 
+After changing the hook, run `node .claude/hooks/protect-paths.cases.mjs`; it tries each case in a throwaway git repo and exits non-zero if any fails.
+
 **`.claude/hooks/done-gate.mjs`** runs `pnpm check` whenever Claude tries to finish with changes on the branch, and sends it back to work if anything fails. Start Docker before a build session, because the integration tests need the local Postgres.
 
 ```js
