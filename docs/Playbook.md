@@ -25,13 +25,13 @@ You steer, Claude Code builds, and GitHub keeps the record. Every step below bec
 
 ## Where we are
 
-**Now:** Phase 0, step 0.1 (install the tools). Last updated Nov 23, 2026.
+**Now:** Phase 0, step 0.5 (quality tooling): the spec is merged, the build has not started. Open: three account settings to confirm (0.2). Before 0.6: GitHub refuses branch protection on this private repo without GitHub Pro. Last updated Nov 25, 2026.
 
 Move this line forward every time a step changes status. Phase status comes from its step table: a phase is Done only after its gate checklist is ticked.
 
 | Phase | Goal | Gate, in one line | Status | Started | Finished |
 | --- | --- | --- | --- | --- | --- |
-| 0 · Foundation | A clean repo that deploys a health check, with CI and agent guardrails | CI green on `main`; the hooks block a protected-test edit | Not started |  |  |
+| 0 · Foundation | A clean repo that deploys a health check, with CI and agent guardrails | CI green on `main`; the hooks block a protected-test edit | In progress | Nov 24, 2026 |  |
 | 1 · Tenancy and sign-in | Users sign up, create a workspace, and only ever see their own data | Isolation suite green; runtime-role test passes; red team finds no cross-tenant path | Not started |  |  |
 | 2 · Page editor | A signed-in user builds a page, saves drafts, publishes and rolls back | Concurrent-save, rich-text and publish e2e tests green | Not started |  |  |
 | 3 · Public sites | Published pages are live on the sites hostname | Host-routing tests green; app cookies never reach the sites host | Not started |  |  |
@@ -75,16 +75,16 @@ These are steps 0.1 and 0.2, and you do them yourself: about an hour, all free t
 
 **Tools on your computer (step 0.1)**
 
-- [ ] Node.js 26 LTS (26.13.1 was current on November 23). Use the installer from nodejs.org.
-- [ ] pnpm, installed with its own installer from pnpm.io. Step 0.3 pins the version in `package.json`.
-- [ ] Git, and the GitHub CLI (`gh`). Run `gh auth login` once; Claude Code uses `gh` to open issues and pull requests.
-- [ ] Docker Desktop. The isolation tests run against a local Postgres in a container.
-- [ ] VS Code with the Claude Code extension, signed in. `/security-review` is included on Pro and Max plans.
-- [ ] One empty folder for the project. Claude Code works only inside it.
+- [x] Node.js 26 LTS (26.13.1 was current on November 23). Use the installer from nodejs.org.
+- [x] pnpm, installed with its own installer from pnpm.io. Step 0.3 pins the version in `package.json`.
+- [x] Git, and the GitHub CLI (`gh`). Run `gh auth login` once; Claude Code uses `gh` to open issues and pull requests.
+- [x] Docker Desktop. The isolation tests run against a local Postgres in a container.
+- [x] VS Code with the Claude Code extension, signed in. `/security-review` is included on Pro and Max plans.
+- [x] One empty folder for the project. Claude Code works only inside it.
 
 **Accounts (step 0.2)**
 
-- [ ] GitHub: create an empty private repository.
+- [x] GitHub: create an empty private repository.
 - [ ] Vercel, on Hobby, connected to your GitHub account.
 - [ ] Neon: one project on Postgres 18. Keep its default connection string for migrations only; the app gets its own role in step 1.2 (F26).
 - [ ] Stripe, in test mode only. Never paste live keys anywhere.
@@ -96,11 +96,11 @@ A new repo that deploys a health check, with CI and the agent guardrails in plac
 
 | ID | Step | Model | Done when | Status | Evidence |
 | --- | --- | --- | --- | --- | --- |
-| 0.1 | Install the tools (Before Claude Code) | You | Every box in that list is ticked | Not started |  |
-| 0.2 | Create the accounts (Before Claude Code) | You | Every box in that list is ticked | Not started |  |
-| 0.3 | Scaffold one Next.js 16.4.5+ app at the repo root: strict TypeScript, `pnpm-workspace.yaml` with the supply-chain settings, Node and pnpm pinned, `.env.example`, environment validated at boot | Sonnet | `pnpm build` passes and `/api/health` returns 200 locally | Not started |  |
-| 0.4 | On a kit/ branch, add the agent kit from the Agent kit tab: `CLAUDE.md`, `.claude/` settings, hooks, agents and skills, `docs/adr/` with ADR #1–10, the spec and PR templates | Sonnet | `/status` runs, and an edit to `tests/security/` is blocked | Not started |  |
-| 0.5 | Quality tooling: Vitest, Playwright, ESLint rules (database client only under `src/server/`), Prettier, knip, Stryker for the mutation tests run at gates, one `pnpm check` script | Sonnet | `pnpm check` runs typecheck, lint and tests in one command | Not started |  |
+| 0.1 | Install the tools (Before Claude Code) | You | Every box in that list is ticked | Done | Checked Nov 25: Node 26.13.1 (via fnm), pnpm 12.23.0, Git, `gh` signed in, Docker 29.9.3 |
+| 0.2 | Create the accounts (Before Claude Code) | You | Every box in that list is ticked | In progress | GitHub private repo checked; Vercel, Neon and Stripe accounts exist (Nov 25). To confirm: Vercel on Hobby and connected to GitHub, a Neon project on Postgres 18, Stripe in test mode |
+| 0.3 | Scaffold one Next.js 16.4.5+ app at the repo root: strict TypeScript, `pnpm-workspace.yaml` with the supply-chain settings, Node and pnpm pinned, `.env.example`, environment validated at boot | Sonnet | `pnpm build` passes and `/api/health` returns 200 locally | Done | [PR #1](https://github.com/elchinatalpf/freelancer-platform/pull/1) |
+| 0.4 | On a kit/ branch, add the agent kit from the Agent kit tab: `CLAUDE.md`, `.claude/` settings, hooks, agents and skills, `docs/adr/` with ADR #1–10, the spec and PR templates | Sonnet | `/status` runs, and an edit to `tests/security/` is blocked | Done | [PR #2](https://github.com/elchinatalpf/freelancer-platform/pull/2); follow-ups [#3](https://github.com/elchinatalpf/freelancer-platform/pull/3) and [#6](https://github.com/elchinatalpf/freelancer-platform/pull/6) |
+| 0.5 | Quality tooling: Vitest, Playwright, ESLint rules (database client only under `src/server/`), Prettier, knip, Stryker for the mutation tests run at gates, one `pnpm check` script | Sonnet | `pnpm check` runs typecheck, lint and tests in one command | In progress | Spec [PR #5](https://github.com/elchinatalpf/freelancer-platform/pull/5), [issue #4](https://github.com/elchinatalpf/freelancer-platform/issues/4); build not started |
 | 0.6 | CI on GitHub Actions: frozen install, `pnpm check`, Playwright smoke test, dependency audit, secret scan, a Postgres service container; branch protection on `main` | Sonnet | A PR shows green checks and `main` refuses direct pushes | Not started |  |
 | 0.7 | Connect Vercel: preview deployment per PR, environment variables per environment | You + Sonnet | The PR shows a preview link and `/api/health` answers on `<app>.vercel.app` | Not started |  |
 
