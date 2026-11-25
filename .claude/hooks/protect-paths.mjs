@@ -7,9 +7,10 @@ import path from 'node:path';
 
 const MIGRATIONS_DIR = 'drizzle/'; // step 1.1 confirms this path
 
+// macOS and Windows file systems ignore case, so compare paths in lowercase there.
 const norm = (p) => {
   const s = String(p).replaceAll('\\', '/');
-  return process.platform === 'win32' ? s.toLowerCase() : s;
+  return ['win32', 'darwin'].includes(process.platform) ? s.toLowerCase() : s;
 };
 
 try {
