@@ -15,6 +15,7 @@ strictDepBuilds: true          # fail on dependency build scripts nobody has rev
 
 # Dependency build scripts are denied unless listed here.
 allowBuilds:
+  fsevents: false # vite's optional macOS file watcher; its published binary needs no build
   sharp: false
   unrs-resolver: false
 
