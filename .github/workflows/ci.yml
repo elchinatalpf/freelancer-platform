@@ -1,0 +1,171 @@
+# CI for every pull request and every change to main (docs/specs/0.6.md).
+# A pull request runs its own copy of this file and of the guard, so read the
+# whole diff of any PR that touches .github/. guard.test.mjs checks the rules
+# this file must keep.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  APP_URL: http://dummy.invalid
+
+jobs:
+  guard:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          runtime: node@26.13.1
+          install: false
+      - run: node --test .github/scripts/guard.test.mjs
+      - run: node .claude/hooks/protect-paths.cases.mjs
+      - run: node .github/scripts/guard.mjs
+
+  check:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          runtime: node@26.13.1
+          cache: true
+          require-lockfile: true
+      - run: pnpm check
+
+  e2e:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          runtime: node@26.13.1
+          cache: true
+          require-lockfile: true
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  integration:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          # A throwaway database that only this job can reach.
+          POSTGRES_PASSWORD: ci-only-password
+        ports:
+          - 5432:5432
+        # Over TCP, so the temporary server of the first start-up does not count.
+        options: >-
+          --health-cmd "pg_isready --host 127.0.0.1 --username postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgresql://postgres:ci-only-password@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          runtime: node@26.13.1
+          cache: true
+          require-lockfile: true
+      - name: The database is Postgres 18
+        env:
+          POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+        run: |
+          version=$(docker exec "$POSTGRES_CONTAINER" psql "$DATABASE_URL" \
+            --tuples-only --no-align --command 'select version()')
+          echo "$version"
+          [[ "$version" == "PostgreSQL 18."* ]]
+      - run: pnpm test:integration
+
+  audit:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          runtime: node@26.13.1
+          install: false
+      - run: pnpm audit --audit-level high
+
+  secrets:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: No gitleaks settings from the repository
+        run: |
+          for file in .gitleaks.toml .gitleaksignore; do
+            if test -e "$file" || test -L "$file"; then
+              echo "gitleaks would load $file by itself and could skip a key. Remove it."
+              exit 1
+            fi
+          done
+      - name: Scan the whole history for leaked keys
+        run: >-
+          docker run --rm --volume "$GITHUB_WORKSPACE:/repo:ro"
+          ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+          git --redact --ignore-gitleaks-allow /repo
+
+  # The one check the ruleset requires. It runs even when a job fails or is
+  # skipped, and passes only if every job succeeded.
+  ci-ok:
+    needs: [guard, check, e2e, integration, audit, secrets]
+    if: always()
+    runs-on: ubuntu-26.04
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Every job succeeded
+        env:
+          GUARD: ${{ needs.guard.result }}
+          CHECK: ${{ needs.check.result }}
+          E2E: ${{ needs.e2e.result }}
+          INTEGRATION: ${{ needs.integration.result }}
+          AUDIT: ${{ needs.audit.result }}
+          # Index syntax keeps the name of the secrets context out of this file.
+          SECRETS: ${{ needs['secrets'].result }}
+        run: |
+          echo "guard=$GUARD check=$CHECK e2e=$E2E integration=$INTEGRATION audit=$AUDIT secrets=$SECRETS"
+          for result in "$GUARD" "$CHECK" "$E2E" "$INTEGRATION" "$AUDIT" "$SECRETS"; do
+            test "$result" = success
+          done
