@@ -125,7 +125,7 @@ Permissions say what Claude Code may do; hooks enforce the rules that must never
 
 Deny rules beat allow rules, and a `Read` deny stops Claude's file tools but not every shell command, which is why the hook below also blocks secrets files. Hooks run through Git Bash on Windows, which the Git installer provides.
 
-**`.claude/hooks/protect-paths.mjs`** blocks edits by branch: feature branches cannot touch `tests/security/`, the agent kit, ADRs, secrets files or applied migrations; `redteam/` branches can write only security tests and gate reports; `kit/` branches may change the kit and ADRs. Tested on all of these cases before publishing.
+**`.claude/hooks/protect-paths.mjs`** blocks edits by branch: feature branches cannot touch `tests/security/`, the agent kit, ADRs, `.github/`, secrets files or applied migrations; `redteam/` branches can write only security tests and gate reports; `kit/` branches may change the kit, ADRs and `.github/`. Tested on all of these cases before publishing.
 
 ```js
 // PreToolUse hook: blocks edits the current branch may not make.
@@ -161,14 +161,14 @@ try {
   if (/(^|\/)\.env(\.[^/]*)?$/.test(rel) && !rel.endsWith('.env.example')) block('It is a secrets file.');
 
   const isSecurityTest = rel.startsWith('tests/security/');
-  const isKit = rel.startsWith('.claude/') || rel.startsWith('docs/adr/') || rel === 'claude.md' || rel === 'CLAUDE.md';
+  const isKit = rel.startsWith('.claude/') || rel.startsWith('.github/') || rel.startsWith('docs/adr/') || rel === 'claude.md' || rel === 'CLAUDE.md';
   const isAppliedMigration = rel.startsWith(MIGRATIONS_DIR) && rel.endsWith('.sql') && existsSync(file);
 
   if (branch.startsWith('redteam/')) {
     if (!isSecurityTest && !rel.startsWith('docs/gates/')) block('Red-team branches may only add tests in tests/security/.');
   } else {
     if (isSecurityTest) block('tests/security/ belongs to the red team.');
-    if (isKit && !branch.startsWith('kit/')) block('The agent kit and ADRs change only on kit/ branches.');
+    if (isKit && !branch.startsWith('kit/')) block('The agent kit, ADRs and .github/ change only on kit/ branches.');
     if (isAppliedMigration) block('Applied migrations are never edited; write a new migration.');
   }
   process.exit(0);

@@ -31,14 +31,14 @@ try {
   if (/(^|\/)\.env(\.[^/]*)?$/.test(rel) && !rel.endsWith('.env.example')) block('It is a secrets file.');
 
   const isSecurityTest = rel.startsWith('tests/security/');
-  const isKit = rel.startsWith('.claude/') || rel.startsWith('docs/adr/') || rel === 'claude.md' || rel === 'CLAUDE.md';
+  const isKit = rel.startsWith('.claude/') || rel.startsWith('.github/') || rel.startsWith('docs/adr/') || rel === 'claude.md' || rel === 'CLAUDE.md';
   const isAppliedMigration = rel.startsWith(MIGRATIONS_DIR) && rel.endsWith('.sql') && existsSync(file);
 
   if (branch.startsWith('redteam/')) {
     if (!isSecurityTest && !rel.startsWith('docs/gates/')) block('Red-team branches may only add tests in tests/security/.');
   } else {
     if (isSecurityTest) block('tests/security/ belongs to the red team.');
-    if (isKit && !branch.startsWith('kit/')) block('The agent kit and ADRs change only on kit/ branches.');
+    if (isKit && !branch.startsWith('kit/')) block('The agent kit, ADRs and .github/ change only on kit/ branches.');
     if (isAppliedMigration) block('Applied migrations are never edited; write a new migration.');
   }
   process.exit(0);
