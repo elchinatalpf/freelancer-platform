@@ -7,6 +7,8 @@ const BASE_URL = `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: "tests/e2e",
+  // CI uploads the HTML report, playwright-report/, when a test fails.
+  reporter: process.env.CI ? [["dot"], ["html"]] : "list",
   use: { baseURL: BASE_URL },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
