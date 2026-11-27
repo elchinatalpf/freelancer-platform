@@ -440,6 +440,13 @@ function checkWorkflow(text) {
   if (/\bsecrets\s*[.[]|\(\s*secrets\s*\)|\bsecrets: *inherit/i.test(text))
     errors.push("the secrets context is used");
 
+  // A newer push cancels the older run of a pull request, never one on main.
+  const cancel = linesWith(/cancel-in-progress["']?\s*:/);
+  const onlyPulls =
+    "  cancel-in-progress: ${{ github.event_name == 'pull_request' }}";
+  if (cancel.length !== 1 || lines[cancel[0]] !== onlyPulls)
+    errors.push("cancel-in-progress is not limited to pull requests");
+
   const jobs = [];
   const start = lines.indexOf("jobs:");
   if (start !== -1) {
@@ -508,6 +515,14 @@ describe("acceptance test 4: ci.yml keeps decision 1", () => {
     "a secret": [/^env:$/m, "env:\n  TOKEN: ${{ secrets.TOKEN }}"],
     "a secret by index": [/^env:$/m, "env:\n  TOKEN: ${{ secrets['T'] }}"],
     "a job without a timeout": [/^ {4}timeout-minutes: \d+\n/m, ""],
+    "cancelling runs on main": [
+      /cancel-in-progress: .*$/m,
+      "cancel-in-progress: true",
+    ],
+    "a job that cancels runs": [
+      /^ {2}guard:$/m,
+      "  guard:\n    concurrency:\n      group: g\n      cancel-in-progress: true",
+    ],
     "an expression in a one-line run": [
       /run: pnpm check$/m,
       "run: echo ${{ github.head_ref }}",

@@ -14,7 +14,8 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # A newer push cancels a pull request's older run, never a running one on main.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   APP_URL: http://dummy.invalid
