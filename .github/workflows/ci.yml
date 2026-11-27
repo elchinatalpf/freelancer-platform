@@ -140,12 +140,22 @@ jobs:
           done
       # --text: a .gitattributes `-diff` or `binary` cannot hide a file.
       # --log-opts replaces gitleaks' own `--full-history --all`, so it names both.
+      # gitleaks can exit 0 when git fails, so a run counts only if its log, kept
+      # uncoloured to be readable here, reports at least one scanned commit.
       - name: Scan the whole history for leaked keys
-        run: >-
-          docker run --rm --volume "$GITHUB_WORKSPACE:/repo:ro"
-          ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
-          git --redact --ignore-gitleaks-allow
-          --log-opts="--full-history --all --text" /repo
+        run: |
+          log="$RUNNER_TEMP/gitleaks.log"
+          status=0
+          docker run --rm --volume "$GITHUB_WORKSPACE:/repo:ro" \
+            ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
+            git --redact --ignore-gitleaks-allow --no-color \
+            --log-opts="--full-history --all --text" /repo >"$log" 2>&1 || status=$?
+          cat "$log"
+          test "$status" -eq 0
+          if ! grep -Eq 'INF [1-9][0-9]* commits scanned\.$' "$log"; then
+            echo "gitleaks did not report a scanned commit, so nothing was checked."
+            exit 1
+          fi
 
   # The one check the ruleset requires. It runs even when a job fails or is
   # skipped, and passes only if every job succeeded.

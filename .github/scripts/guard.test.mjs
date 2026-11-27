@@ -521,3 +521,68 @@ describe("acceptance test 4: ci.yml keeps decision 1", () => {
     });
   }
 });
+
+describe("acceptance test 4: a secret scan that read nothing fails", () => {
+  // The script of the step that runs gitleaks, as Actions hands it to bash.
+  function scanScript() {
+    const text = readFileSync(
+      new URL(".github/workflows/ci.yml", REPO_ROOT),
+      "utf8",
+    );
+    const runs = text.matchAll(/^ {8}run: (\||>-)\n((?: {10}.*\n)+)/gm);
+    for (const [, style, body] of runs) {
+      if (!body.includes("/gitleaks:")) continue;
+      const script = body.replace(/^ {10}/gm, "");
+      return style === "|" ? script : script.trim().replaceAll("\n", " ");
+    }
+    assert.fail("no run: block runs gitleaks");
+  }
+
+  // Runs that script with a stand-in docker, which logs `log` and exits `status`.
+  function scan(log, status = 0) {
+    const dir = mkdtempSync(path.join(tmp, "scan-"));
+    writeFileSync(
+      path.join(dir, "docker"),
+      '#!/bin/sh\nprintf \'%s\\n\' "$FAKE_LOG" >&2\nexit "$FAKE_STATUS"\n',
+      { mode: 0o755 },
+    );
+    const result = spawnSync("bash", ["-e", "-c", scanScript()], {
+      cwd: dir,
+      env: {
+        ...ENV,
+        PATH: `${dir}${path.delimiter}${ENV.PATH}`,
+        GITHUB_WORKSPACE: dir,
+        RUNNER_TEMP: dir,
+        FAKE_LOG: log,
+        FAKE_STATUS: String(status),
+      },
+      encoding: "utf8",
+    });
+    const output = `${result.stdout}${result.stderr}`;
+    // A reader of the CI log must see what gitleaks said.
+    assert.ok(output.includes(log), output);
+    return { status: result.status, output };
+  }
+
+  // gitleaks 8.30.1 with --no-color.
+  const logged = (...messages) =>
+    messages.map((message) => `3:04PM INF ${message}`).join("\n");
+  const scanned = (commits) =>
+    logged(`${commits} commits scanned.`, "no leaks found");
+
+  for (const commits of [1, 10, 205]) {
+    it(`passes when ${commits} were scanned and no key was found`, () =>
+      passes(scan(scanned(commits))));
+  }
+  it("fails when 0 commits were scanned", () =>
+    fails(scan(scanned(0)), /did not report a scanned commit/));
+  it("fails when the commits line is missing", () =>
+    fails(scan(logged("no leaks found")), /did not report a scanned commit/));
+  it("fails when the commits line has another form", () =>
+    fails(
+      scan(logged("commits scanned: 31")),
+      /did not report a scanned commit/,
+    ));
+  it("fails when gitleaks fails, whatever it scanned", () =>
+    fails(scan(scanned(31), 1)));
+});
