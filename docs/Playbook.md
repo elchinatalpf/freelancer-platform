@@ -25,7 +25,7 @@ You steer, Claude Code builds, and GitHub keeps the record. Every step below bec
 
 ## Where we are
 
-**Now:** Phase 0, steps 0.1 to 0.5 are done. 0.6 (CI) is in review in [PR #11](https://github.com/elchinatalpf/freelancer-platform/pull/11), on the `kit/0.6-ci-build` branch, a `kit/` branch because 0.6 changes `.github/` and the protect-paths hook. Its spec is `docs/specs/0.6.md` ([issue #9](https://github.com/elchinatalpf/freelancer-platform/issues/9)). A repository ruleset already makes changes to `main` go through a pull request. PR #11 has had its first green run, so you can now add `ci-ok` to that ruleset as a required check. Last updated Nov 26, 2026.
+**Now:** Phase 0, steps 0.1 to 0.5 are done. 0.6 (CI) is in review in [PR #11](https://github.com/elchinatalpf/freelancer-platform/pull/11), on the `kit/0.6-ci-build` branch, a `kit/` branch because 0.6 changes `.github/` and the protect-paths hook. Its spec is `docs/specs/0.6.md` ([issue #9](https://github.com/elchinatalpf/freelancer-platform/issues/9)). A repository ruleset already makes changes to `main` go through a pull request. PR #11 has had its first green run, so you can now add `ci-ok` to that ruleset as a required check. Last updated Nov 27, 2026.
 
 Move this line forward every time a step changes status. Phase status comes from its step table: a phase is Done only after its gate checklist is ticked.
 
