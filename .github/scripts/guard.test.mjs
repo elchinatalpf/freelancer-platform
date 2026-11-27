@@ -241,6 +241,15 @@ describe("acceptance test 2: pinned scripts", () => {
   });
   it("a script pinned twice fails", () =>
     violations(packageJson(), `${PINNED}lint: true\n`, "lint"));
+  it("a precheck script fails", () =>
+    violations(packageJson({ precheck: "true" }), PINNED, "precheck"));
+  it("a postlint script fails", () =>
+    violations(packageJson({ postlint: "true" }), PINNED, "postlint"));
+  it("a script that only looks like one of those passes", () =>
+    violations(
+      packageJson({ predev: "true", prepare: "true", "lint:post": "true" }),
+      PINNED,
+    ));
   it("the repository's package.json matches .github/check-script.txt", () => {
     const read = (file) => readFileSync(new URL(file, REPO_ROOT), "utf8");
     violations(read("package.json"), read(".github/check-script.txt"));

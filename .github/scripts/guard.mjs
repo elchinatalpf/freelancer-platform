@@ -52,7 +52,8 @@ export function checkPaths(branch, paths) {
 }
 
 // One message per violation: `check`, and every script it calls with
-// `pnpm <script>`, must match its line in .github/check-script.txt.
+// `pnpm <script>`, must match its line in .github/check-script.txt, and no
+// pinned script may have a pre or post script.
 export function checkScripts(packageJson, pinned) {
   const errors = [];
   const pins = new Map();
@@ -84,6 +85,14 @@ export function checkScripts(packageJson, pinned) {
         `Script ${quote(name)} differs from .github/check-script.txt.`,
       );
   }
+  // pnpm runs pre<name> and post<name> around a script, so either one would
+  // change what a pinned script does without changing its line.
+  for (const name of pins.keys())
+    for (const hook of [`pre${name}`, `post${name}`])
+      if (Object.hasOwn(scripts, hook))
+        errors.push(
+          `Script ${quote(hook)} would run with the pinned script ${quote(name)}. Remove it from package.json.`,
+        );
   return errors;
 }
 
