@@ -422,6 +422,12 @@ function checkWorkflow(text) {
   if (images.length === 0 || !images.every((image) => byDigest.test(image)))
     errors.push("the gitleaks image is not pinned by digest");
 
+  // --text: a .gitattributes `-diff` or `binary` cannot hide a file. --log-opts
+  // replaces gitleaks' own `--full-history --all`, so those must be there too.
+  const logOpts = /--log-opts="--full-history --all --text"/;
+  if (linesWith(logOpts).length === 0)
+    errors.push("the gitleaks scan does not read the whole history as text");
+
   if (/\bsecrets\s*[.[]|\(\s*secrets\s*\)|\bsecrets: *inherit/i.test(text))
     errors.push("the secrets context is used");
 
@@ -488,6 +494,8 @@ describe("acceptance test 4: ci.yml keeps decision 1", () => {
     "an action pinned to a tag": [/@[0-9a-f]{40}/, "@v7"],
     "a pin without its tag comment": [/ # v\d+\.\d+\.\d+$/m, ""],
     "a gitleaks image without a digest": [/@sha256:[0-9a-f]{64}/, ""],
+    "a scan without --text": [/ --text"/, '"'],
+    "a scan of one branch only": [/ --all --text"/, ' --text"'],
     "a secret": [/^env:$/m, "env:\n  TOKEN: ${{ secrets.TOKEN }}"],
     "a secret by index": [/^env:$/m, "env:\n  TOKEN: ${{ secrets['T'] }}"],
     "a job without a timeout": [/^ {4}timeout-minutes: \d+\n/m, ""],
