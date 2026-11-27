@@ -59,6 +59,11 @@ const CASES = [
     skip: !IGNORES_CASE && `skipped on ${process.platform}: the hook keeps path case there`,
   }],
 
+  // Step 0.6: .github/ changes only on kit/ branches.
+  [30, STEP, 'Write', '.github/workflows/ci.yml', 2],
+  [31, KIT, 'Write', '.github/workflows/ci.yml', 0],
+  [32, STEP, 'Write', '.GitHub/workflows/ci.yml', IGNORES_CASE ? 2 : 0],
+
   // Extra checks.
   ['X1', STEP, 'stdin', null, 2, { stdin: '', note: '(empty stdin)', reason: ERROR }],
   ['X2', STEP, 'stdin', null, 2, { stdin: 'null', note: '"null" piped in', reason: ERROR }],

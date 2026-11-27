@@ -9,8 +9,8 @@ Step <id> · Closes #<issue>
 - Tests added
 
 ## Risk
-Touches a migration, src/server/, proxy.ts, the webhook handler, tests/security/
-or .claude/? Name which, or write "none".
+Touches a migration, src/server/, proxy.ts, the webhook handler, tests/security/,
+.claude/ or .github/? Name which, or write "none".
 
 ## Reviewer verdict
 (link to the reviewer's comment)
