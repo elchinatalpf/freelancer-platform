@@ -25,8 +25,9 @@ tests/security/      red-team tests; protected
   Route Handler errors are RFC 9457 problem+json.
 - No raw HTML, script or embed blocks. Rich text renders on the server.
 - Never read or print .env files. Add a dependency only if the spec names it.
-- Branches: step/<id>-<slug> for features, kit/<slug> for .claude/ or docs/adr/
-  changes, redteam/phase-<n> for red-team tests. A hook enforces what each may edit.
+- Branches: step/<id>-<slug> for features, kit/<slug> for .claude/, .github/ or
+  docs/adr/ changes, redteam/phase-<n> for red-team tests. A hook and CI enforce
+  what each may edit.
 - If the spec conflicts with an ADR, stop and say so. Do not work around it.
 
 ## Definition of done
