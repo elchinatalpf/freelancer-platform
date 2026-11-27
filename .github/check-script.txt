@@ -1,0 +1,6 @@
+check: pnpm typecheck && pnpm lint && pnpm format:check && pnpm knip && pnpm test:unit
+typecheck: APP_URL=http://dummy.invalid next typegen && tsc --noEmit
+lint: eslint
+format:check: prettier --check .
+knip: APP_URL=http://dummy.invalid knip
+test:unit: vitest run --project unit
